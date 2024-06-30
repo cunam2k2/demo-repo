@@ -1,4 +1,4 @@
-package com.example.myapplication.adapters;
+package com.example.myapplication;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;

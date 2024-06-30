@@ -11,10 +11,13 @@ import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,12 +45,12 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
     SearchView searchView_home;
     Notes selectedNote;
     SwipeRefreshLayout swipeRefreshLayout;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        createNotificationChannel();
         recyclerView = findViewById(R.id.recycle_home);
         fab_add = findViewById(R.id.fab_add);
         searchView_home = findViewById(R.id.searchView_home);
@@ -90,6 +93,7 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
         });
 
         swipeRefreshLayout.setOnRefreshListener(this);
+
     }
 
     private void filter(String newText) {
@@ -197,7 +201,10 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
                         date.set(Calendar.MINUTE, minute);
                         long reminderTime = date.getTimeInMillis();
                         database.noteDao().updateReminderTime(selectedNote.getID(), reminderTime);
+
                         Toast.makeText(MainActivity.this, "Reminder set!", Toast.LENGTH_SHORT).show();
+                        setReminderAlarm(reminderTime, selectedNote.getTitle(), selectedNote.getNotes());
+
                         notes.clear();
                         notes.addAll(database.noteDao().getAll());
                         filter(searchView_home.getQuery().toString());
@@ -207,7 +214,14 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             }
         }, currentDate.get(Calendar.YEAR), currentDate.get(Calendar.MONTH), currentDate.get(Calendar.DATE)).show();
     }
-
+    private void setReminderAlarm(long reminderTime, String title, String content) {
+        Intent intent = new Intent(MainActivity.this, ReminderBroadcast.class);
+        intent.putExtra("title", title);
+        intent.putExtra("content", content);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(MainActivity.this, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, reminderTime, pendingIntent);
+    }
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "ReminderChannel";
