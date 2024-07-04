@@ -6,4 +6,6 @@
         android:title="Delete"/>
     <item android:id="@+id/set_timer"
         android:title="Set Timer" />
+    <item android:id="@+id/share"
+        android:title="Share" />
 </menu>

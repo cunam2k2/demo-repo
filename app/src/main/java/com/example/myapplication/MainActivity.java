@@ -181,10 +181,22 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             Toast.makeText(MainActivity.this, "Note Deleted!", Toast.LENGTH_SHORT).show();
         }else if (id == R.id.set_timer) {
             showDateTimePicker();
+        } else if (id == R.id.share) {
+            shareNote();
         } else {
             return false;
         }
         return true;
+    }
+
+    private void shareNote() {
+        if (selectedNote != null) {
+            Intent shareIntent = new Intent();
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.putExtra(Intent.EXTRA_TEXT, "Title: " + selectedNote.getTitle() + "\n\n" + "Notes: " + selectedNote.getNotes());
+            shareIntent.setType("text/plain");
+            startActivity(Intent.createChooser(shareIntent, "Share Note via"));
+        }
     }
 
     private void showDateTimePicker() {
@@ -233,7 +245,6 @@ public class MainActivity extends AppCompatActivity implements PopupMenu.OnMenuI
             notificationManager.createNotificationChannel(channel);
         }
     }
-
     @Override
     public void onRefresh() {
         notes.clear();
